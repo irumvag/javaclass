@@ -18,7 +18,7 @@ public class Rectangle {
         System.out.print("Enter the width of the rectangle: ");
         float width = scanner.nextFloat();
 
-        Quadriplateral quadrilateral = new Quadriplateral("John", "Rectangle");
+        Quadriplateral quadrilateral = new Quadriplateral("Gad", "Rectangle");
         float area = quadrilateral.getArea(length, width);
         System.out.println("Area of Rectangle: " + area);
     }

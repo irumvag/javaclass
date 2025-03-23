@@ -1,6 +1,5 @@
 com\mycompany\polygons\Polygon.class
-com\mycompany\polygons\myserver.class
-com\mycompany\polygons\testingfile.class
-com\mycompany\polygons\Exemption.class
 com\mycompany\polygons\Quadriplateral.class
-com\mycompany\polygons\Resultset.class
+com\mycompany\polygons\Trapezium.class
+com\mycompany\polygons\Rectangle.class
+com\mycompany\polygons\Square.class

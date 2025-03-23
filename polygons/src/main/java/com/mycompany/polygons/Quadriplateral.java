@@ -18,7 +18,7 @@ public class Quadriplateral /*implements Polygon*/{
       System.out.println("Hello Student");
       }
       public Quadriplateral(String user,String Name){
-      System.out.println("The name of user"+user+" The type of Quadrilateral:"+Name);
+      System.out.println("The name of user "+user+" The type of Quadrilateral: "+Name);
       }
       public float getArea(float side)
       {

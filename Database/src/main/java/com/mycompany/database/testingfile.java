@@ -13,11 +13,11 @@ public class testingfile {
     public static void main(String[] args)
     {
         try{
-            Class.forName("com.mysql.jdbc.Driver");//registering driver
+            Class.forName("com.mysql.cj.jdbc.Driver");//registering driver
             String user="root";
             String password="";
             Connection con=null;
-            con=DriverManager.getConnection("jdbc:msql://locakhost:3360",user,password);//connecting connection
+            con=DriverManager.getConnection("jdbc:msql://locakhost:3360/schoollab",user,password);//connecting connection
             //DriverManager.registerDriver();
             Statement sttm=con.createStatement();
             String sql="Select * from student";
@@ -26,6 +26,7 @@ public class testingfile {
         }catch(Exception e)
         {
             System.out.println("Connection failed");
+            e.printStackTrace();
         }
     }
 }
