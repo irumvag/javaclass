@@ -87,7 +87,7 @@ public class Feedback extends JFrame {
             model.addRow(new Object[]{firstName, lastName, email, gender, comment});
         });
 
-        displayButton.addActionListener(e -> new ResultPage());
+        //displayButton.addActionListener(e -> new ResultPage());
 
         setVisible(true);
     }
