@@ -1,9 +1,3 @@
-<%-- 
-    Document   : error
-    Created on : 30 Mar 2025, 09:19:32
-    Author     : Chairman
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -21,7 +15,7 @@
              ">
         <h1><center>
 		<h1>Error</h1>
-		<h2><%=exception.getMessage() %><br/> </h2>
+                <h2><%=exception.getMessage() %><br/></h2>
 	</center>
         </h1>
         </div>

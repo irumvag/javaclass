@@ -22,15 +22,18 @@
         <div class="container-fluid bg-light vh-100">
             <div class="d-flex justify-content-center align-items-center py-2">
                 <div class="m-auto d-flex flex-column align-items-middle p-4 bg-white shadow rounded">
-                    <form action="" method="post" class="mt-5">
+                    <form action="loginServlet" method="post" class="mt-5">
                         <label for="label" class="text-center d-block mb-4">Good User management is good act of knowing them and manage them as you wish. you are most welcome!</label><br>
+                            <% if(request.getAttribute("error") != null) { %>
+                            <p style="color: red"><%= request.getAttribute("error") %></h2>
+                            <% } %>
                         <div class="mb-3 w-100">
-                            <label for="phone" class="form-label">Phone Number:</label>
-                            <input type="text" name="phone_number" id="phone" class="form-control border-0 bg-light rounded">
+                            <label for="phone" class="form-label">Username:</label>
+                            <input type="text" name="username" id="phone" class="form-control border-0 bg-light rounded" required>
                         </div>
                         <div class="mb-3 w-100">
                             <label for="password" class="form-label">Account Password:</label>
-                            <input type="password" name="password" id="password" class="form-control border-0 bg-light rounded">
+                            <input type="password" name="password" id="password" class="form-control border-0 bg-light rounded" required>
                         </div>
                         <p class="text-center mb-3"><a href="#">Forgot password?</a></p>
                         <button type="submit" class="btn btn-warning p-2 w-100">Login</button>
