@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    <servlet>
+        <description>user list</description>
+        <servlet-name>dashboard</servlet-name>
+        <servlet-class>com.mycompany.assingment.DashboardServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <description>Editing user</description>
+        <servlet-name>edit-user</servlet-name>
+        <servlet-class>com.mycompany.assingment.EditUserServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <description>update user infomation</description>
+        <servlet-name>update-user</servlet-name>
+        <servlet-class>com.mycompany.assingment.UpdateUserServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <description>deleting user</description>
+        <servlet-name>delete-user</servlet-name>
+        <servlet-class>com.mycompany.assingment.DeleteUserServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <description>dashboard add user</description>
+        <servlet-name>add-User</servlet-name>
+        <servlet-class>com.mycompany.assingment.addUserServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Logout</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>register</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dashboard</servlet-name>
+        <url-pattern>/dashboard</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>edit-user</servlet-name>
+        <url-pattern>/editUser</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>update-user</servlet-name>
+        <url-pattern>/updateUser</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>delete-user</servlet-name>
+        <url-pattern>/deleteUser</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>add-User</servlet-name>
+        <url-pattern>/adduser</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <servlet>
+        <description>Login servlet</description>
+        <servlet-name>loginServlet</servlet-name>
+        <servlet-class>com.mycompany.assingment.loginServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <description>Back to login page</description>
+        <servlet-name>Logout</servlet-name>
+        <servlet-class>com.mycompany.assingment.logoutServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <description>Sign up page</description>
+        <servlet-name>register</servlet-name>
+        <servlet-class>com.mycompany.assingment.signupServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>loginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    <welcome-file-list>
+        <welcome-file>dashboard.jsp</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>signup.jsp</welcome-file>
+    </welcome-file-list>
+</web-app>
