@@ -3,8 +3,8 @@ public class key {
     private boolean key_right;
     private boolean key_left;
     private boolean key_space;
-    private boolean key_j;
-    private boolean key_k;
+    private boolean key_w;
+    private boolean key_e;
     public void setKey_right(boolean key_right){
     this.key_right=key_right;
     }
@@ -25,18 +25,18 @@ public class key {
     {
     return key_space;
     }
-    public void setKey_j(boolean key_j){
-    this.key_j=key_j;
+    public void setKey_w(boolean key_w){
+    this.key_w=key_w;
     }
-    public boolean isKey_j()
+    public boolean isKey_w()
     {
-    return key_j;
+    return key_w;
     }
-    public void setKey_k(boolean key_k){
-    this.key_k=key_k;
+    public void setKey_e(boolean key_e){
+    this.key_e=key_e;
     }
-    public boolean isKey_k()
+    public boolean isKey_e()
     {
-    return key_k;
+    return key_e;
     }
 }

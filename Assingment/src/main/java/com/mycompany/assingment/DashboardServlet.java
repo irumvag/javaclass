@@ -1,3 +1,4 @@
+
 package com.mycompany.assingment;
 
 import com.mycompany.assingment.dao.User;
@@ -13,7 +14,14 @@ public class DashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<User> userList;
-        String search = request.getParameter("searchs");
+        userList = UserDao.getAllUsers();
+        request.setAttribute("userList", userList);
+        request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        List<User> userList;
+        String search = request.getParameter("search");
         if (search != null && !search.trim().isEmpty()) {
            userList = UserDao.searchUsers(search);
         } else {

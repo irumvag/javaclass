@@ -22,11 +22,11 @@
                 />
         </div> 
         <div class="container mt-5">
-            <h2 class="mb-4">User Management</h2>
+            <h2 class="mb-4">Welcome, '<% out.print(session.getAttribute("user")); %>' in User Management System.</h2>
             <a href="addUser.jsp" class="btn btn-success mb-3">Add New User</a>
-            <form class="d-flex justify-content-end p-3" action="dashboard" method="get">
-                <input class="form-control me-2" type="search" name="searchs" placeholder="Search..." value="${search}">
-                <button class="btn btn-outline-success" type="submit">Search</button>
+            <form class="d-flex justify-content-end p-3" action="dashboard" method="post">
+                <input class="form-control me-2" type="search" name="search" placeholder="Search..." value="${search}">
+                <button class="btn btn-outline-success" type="submit" style="width: 50%">Search</button>
             </form>
             <table class="table table-striped table-hover shadow">
                 <thead class="table-dark">
@@ -44,10 +44,11 @@
                         <tr>
                             <td>${user.id}</td>
                             <td>${user.username}</td>
-                            <td>${user.phone}</td>
+                            <td>0${user.phone}</td>
                             <td>${user.email}</td>
                             <td>${user.country}</td>
                             <td>
+                                <a href="viewUser?id=${user.id}" class="btn btn-primary btn-sm">View</a>
                                 <a href="editUser?id=${user.id}" class="btn btn-warning btn-sm">Edit</a>
                                 <a href="deleteUser?id=${user.id}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?');">
                                     Delete</a>

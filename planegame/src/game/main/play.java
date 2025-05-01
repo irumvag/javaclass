@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package game.main;
 
 import game.component.PanelGame;
 import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.SwingUtilities;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 /**
@@ -15,18 +12,15 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
  * @author Chairman
  */
 public class play extends javax.swing.JFrame {
-
-    /**
-     * Creates new form play
-     */
-    public play() {
+    private int userid;
+    public play(int userId) {
         //initComponents();
         initComponents();
         setLocationRelativeTo(null);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        PanelGame panelGame=new PanelGame();
+        PanelGame panelGame=new PanelGame(userId);
         add(panelGame);
         addWindowListener(new WindowAdapter(){
         @Override
@@ -35,9 +29,21 @@ public class play extends javax.swing.JFrame {
         }
         });
     }
-
-    play(String uname) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    
+    public play() {
+        initComponents();
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+        PanelGame panelGame=new PanelGame(userid);
+        add(panelGame);
+        addWindowListener(new WindowAdapter(){
+        @Override
+        public void windowOpened(WindowEvent e){
+            panelGame.start();
+        }
+        });
     }
 
     /**
@@ -95,7 +101,8 @@ public class play extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new play().setVisible(true);
+                SwingUtilities.invokeLater(() -> new loginFrame().setVisible(true));
+                //new play(100).setVisible(true);
             }
         });
     }

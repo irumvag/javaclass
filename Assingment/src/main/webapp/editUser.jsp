@@ -42,7 +42,7 @@
 
                         <div class="mb-3 w-100">
                             <label for="phone" class="form-label">Phone:</label>
-                            <input type="text" name="phone" id="phone" class="form-control border-0 bg-light rounded" value="${user.phone}" required />
+                            <input type="text" name="phone" id="phone" class="form-control border-0 bg-light rounded" value="0${user.phone}" required />
                         </div>
 
                         <div class="mb-3 w-100">
