@@ -1,38 +1,10 @@
-<%@include file="header.jsp" %>
-<%@include file="auth-check.jsp" %>
-
+<%@include file="Sections/header.jsp" %>
+<%@include file="Sections/auth-check.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@include file="Sections/user-header.jsp" %>
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 bg-yellow vh-100 p-4">
-            <div class="text-center mb-4">
-                <img src="img/user-avatar.png" class="rounded-circle" width="100" alt="User Avatar">
-                <h4 class="text-black mt-2">${user.fullName}</h4>
-            </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link text-black d-flex align-items-center" href="#packages">
-                        <i class="bi bi-house me-2"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-black d-flex align-items-center" href="#packages">
-                        <i class="bi bi-box-seam me-2"></i> My Packages
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-black d-flex align-items-center" href="#tickets">
-                        <i class="bi bi-qr-code me-2"></i> Generate Ticket
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-black d-flex align-items-center" href="#history">
-                        <i class="bi bi-clock-history me-2"></i> History
-                    </a>
-                </li>
-            </ul>
-        </div>
-        
+        <%@include file="Sections/user-sidebar.jsp" %>
         <!-- Main Content -->
         <div class="col-md-9 p-5">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -56,8 +28,34 @@
                 </div>
                 <!-- Repeat other packages -->
             </div>
+            <!-- Restaurant Listing Section -->
+            <section id="restaurants" class="mb-5">
+                <h3 class="mb-4">Popular Restaurants</h3>
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    <c:forEach items="${restaurants}" var="restaurant">
+                        <div class="col">
+                            <div class="card h-100">
+                                <img src="${restaurant.logoUrl}" class="card-img-top" 
+                                     alt="${restaurant.name}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${restaurant.name}</h5>
+                                    <p class="card-text">${restaurant.description}</p>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-outline-warning btn-sm">
+                                            <i class="bi bi-heart"></i> 
+                                            <span>${restaurant.likeCount}</span>
+                                        </button>
+                                        <button class="btn btn-warning btn-sm">
+                                            <i class="bi bi-plus-circle"></i> Follow
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </section>
         </div>
     </div>
 </div>
-
-<%@include file="footer.jsp" %>
+<%@include file="Sections/dashfooter.jsp" %>

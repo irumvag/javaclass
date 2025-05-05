@@ -12,37 +12,42 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
  * @author Chairman
  */
 public class play extends javax.swing.JFrame {
+    
     private int userid;
-    public play(int userId) {
+    private String username;
+
+    public play(int userId, String username) {
         //initComponents();
+        this.username = username;
         initComponents();
         setLocationRelativeTo(null);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        PanelGame panelGame=new PanelGame(userId);
+        PanelGame panelGame = new PanelGame(userId,username);
         add(panelGame);
-        addWindowListener(new WindowAdapter(){
-        @Override
-        public void windowOpened(WindowEvent e){
-            panelGame.start();
-        }
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                panelGame.start();
+            }
         });
     }
-    
+
     public play() {
+        this.username = "Guests";
         initComponents();
         setLocationRelativeTo(null);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        PanelGame panelGame=new PanelGame(userid);
+        PanelGame panelGame = new PanelGame(userid,username);
         add(panelGame);
-        addWindowListener(new WindowAdapter(){
-        @Override
-        public void windowOpened(WindowEvent e){
-            panelGame.start();
-        }
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                panelGame.start();
+            }
         });
     }
 

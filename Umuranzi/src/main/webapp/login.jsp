@@ -1,5 +1,5 @@
-<%@include file="header.jsp" %>
-<%@include file="navbar.jsp" %>
+<%@include file="Sections/header.jsp" %>
+<%@include file="Sections/navbar.jsp" %>
 
 <div class="container mt-5">
     <%-- Error Message --%>
@@ -10,7 +10,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <% } %>
-
+    <input type="hidden" name="csrfToken" value="${csrfToken}">
     <%-- Success Message --%>
     <% if (request.getAttribute("successMessage") != null) {%>
     <div class="alert alert-yellow alert-dismissible fade show" role="alert">
@@ -18,7 +18,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <% }%>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center vh-100">
         <div class="col-md-6">
             <div class="card shadow-lg">
                 <div class="card-header bg-yellow text-black">
@@ -26,6 +26,7 @@
                 </div>
                 <div class="card-body">
                     <form action="LoginServlet" method="POST">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email address</label>
                             <input type="email" class="form-control" id="email" name="email" required>
@@ -37,6 +38,7 @@
                         <button type="submit" class="btn btn-warning w-100">Login</button>
                     </form>
                     <div class="text-center mt-3">
+                        <p class="text-center mt-3">No Account <a href="signup.jsp" style="text-decoration: none;color: greenyellow">Sign up</a>,    By clicking login, you accept user terms and policies.</p>
                         <a href="register.jsp" class="text-black">Create new account</a>
                     </div>
                 </div>
@@ -45,4 +47,4 @@
     </div>
 </div>
 
-<%@include file="footer.jsp" %>
+<%@include file="Sections/footer.jsp" %>

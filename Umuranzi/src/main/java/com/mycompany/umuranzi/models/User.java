@@ -22,6 +22,11 @@ public class User {
     private String password;
     private UserRole role;
     private LocalDateTime registrationDate;
+    private String themePreference;
+
+    // Add getter/setter
+    public String getThemePreference() { return themePreference; }
+    public void setThemePreference(String themePreference) { this.themePreference = themePreference; }
 
     public boolean isValidEmail() {
         return email.matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$");

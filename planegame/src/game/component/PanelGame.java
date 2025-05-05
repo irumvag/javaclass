@@ -7,10 +7,12 @@ import game.object.Rocket;
 import game.object.player;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.List;
 import java.awt.RenderingHints;
 import java.awt.event.KeyAdapter;
@@ -25,6 +27,8 @@ import java.util.Random;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import java.sql.*;
+import java.util.Iterator;
+import javax.swing.SwingWorker;
 
 public class PanelGame extends JComponent {
 
@@ -42,8 +46,8 @@ public class PanelGame extends JComponent {
     private final int TARGET_TIME = 1000000000 / 60;
     private player player1;
     private key k1;
-    private List<Bullet> bullets;
-    private List<Rocket> rockets;
+    private List<Bullet> bullets = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private List<Rocket> rockets = new java.util.concurrent.CopyOnWriteArrayList<>();
     public int marks = 0;
     public int lost;
     private float starTwinklePhase = 0;
@@ -57,6 +61,12 @@ public class PanelGame extends JComponent {
     private static final int MAX_LOST = 5;
     private List<Effect> boomEffects;
     private int score = 0;
+    private String username;
+    private boolean paused = false;
+    private boolean showScoreTable = false;
+    private Rectangle pauseButtonBounds;
+    private Rectangle scoresButtonBounds;
+    private List<Object[]> scoreData;
 
     public void start() {
         width = getWidth();
@@ -70,11 +80,11 @@ public class PanelGame extends JComponent {
             public void run() {
                 while (start) {
                     long startTime = System.nanoTime();
-                    checkPlayerCollision();
                     drawBackground();
                     drawGame();
-                    if (!gameOver) { // Only update game if not over
+                    if (!gameOver && !paused) {
                         checkPlayerCollision();
+                        updateGameState();
                         checkGameOver();
                     }
                     render();
@@ -87,12 +97,16 @@ public class PanelGame extends JComponent {
                 }
             }
         });
-        
+
         initObjectGame();
         initKeyBoard();
         initBullet();
         initStars();
-        SoundManager.playSound("/game/sound/game.wav"); //game sound
+        initUI();
+
+        if (!SoundManager.isGameSoundPlaying()) { 
+            SoundManager.playSound("/game/sound/game.wav");
+        }
         thread.start();
     }
 
@@ -100,6 +114,199 @@ public class PanelGame extends JComponent {
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
         initStars();  // Regenerate stars when window size changes
+    }
+
+    private void initUI() {
+        // Initialize button positions
+        pauseButtonBounds = new Rectangle(10, 10, 80, 30);
+        scoresButtonBounds = new Rectangle(100, 10, 120, 30);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                handleUIClicks(e.getPoint());
+            }
+        });
+    }
+
+    private void handleUIClicks(Point clickPoint) {
+        if (pauseButtonBounds.contains(clickPoint)) {
+            togglePause();
+        } else if (scoresButtonBounds.contains(clickPoint)) {
+            showScoreTable = !showScoreTable;
+            if (showScoreTable) {
+                fetchScores();
+            }
+        }
+    }
+
+    private void drawUI(Graphics2D g2) {
+        // Draw username
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 18));
+        g2.drawString("Player: " + username, 20, height - 30);
+
+        // Draw pause button
+        drawButton(g2, pauseButtonBounds, paused ? "RESUME" : "PAUSE");
+
+        // Draw scores button
+        drawButton(g2, scoresButtonBounds, "HIGH SCORES");
+
+        // Draw overlays
+        if (paused) {
+            drawPauseOverlay(g2);
+        }
+        if (showScoreTable) {
+            drawScoreTable(g2);
+        }
+    }
+
+    private void updateGameState() {
+        // Existing game state updates (player, bullets, rockets)
+        player1.update();
+        updateBullets();
+        updateRockets();
+        checkCollisions();
+    }
+
+    private void updateBullets() {
+        bullets.removeIf(bullet -> {
+            bullet.update();
+            return !bullet.check(width, height);
+        });
+    }
+
+    private void updateRockets() {
+        rockets.removeIf(rocket -> {
+            rocket.update();
+            if (!rocket.check(width, height)) {
+                lost++;
+                if (lost >= MAX_LOST) {
+                    gameOver = true;
+                    saveScore();
+                    showGameOver();
+                }
+                return true; // Remove the rocket
+            }
+            return false; // Keep the rocket
+        });
+    }
+
+    private void checkCollisions() {
+        List<Bullet> bulletsToRemove = new ArrayList<>();
+        List<Rocket> rocketsToRemove = new ArrayList<>();
+
+        for (Bullet bullet : bullets) {
+            Area bulletArea = new Area(bullet.getShape());
+
+            for (Rocket rocket : rockets) {
+                Area rocketArea = new Area(rocket.getShape());
+
+                try {
+                    rocketArea.intersect(bulletArea);
+                    if (!rocketArea.isEmpty()) {
+                        bulletsToRemove.add(bullet);
+                        rocketsToRemove.add(rocket);
+                        marks += 10;
+                        SoundManager.playSound("/game/sound/enemyHit.wav");
+                        break;
+                    }
+                } catch (Exception e) {
+                    // Handle exceptions
+                }
+            }
+        }
+
+        bullets.removeAll(bulletsToRemove);
+        rockets.removeAll(rocketsToRemove);
+    }
+
+    private void drawButton(Graphics2D g2, Rectangle bounds, String text) {
+        g2.setColor(new Color(30, 30, 30, 200));
+        g2.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 15, 15);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.PLAIN, 14));
+        FontMetrics fm = g2.getFontMetrics();
+        int textX = bounds.x + (bounds.width - fm.stringWidth(text)) / 2;
+        int textY = bounds.y + (bounds.height - fm.getHeight()) / 2 + fm.getAscent();
+        g2.drawString(text, textX, textY);
+    }
+
+    private void drawPauseOverlay(Graphics2D g2) {
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRect(0, 0, width, height);
+        g2.setColor(Color.YELLOW);
+        g2.setFont(new Font("Arial", Font.BOLD, 60));
+        String text = "PAUSED";
+        int textWidth = g2.getFontMetrics().stringWidth(text);
+        g2.drawString(text, width / 2 - textWidth / 2, height / 2);
+    }
+
+    private void drawScoreTable(Graphics2D g2) {
+        // Semi-transparent background
+        g2.setColor(new Color(0, 0, 0, 200));
+        g2.fillRoundRect(width / 2 - 200, 50, 400, 300, 20, 20);
+
+        // Table header
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        g2.drawString("Top Scores", width / 2 - 50, 80);
+
+        // Draw scores
+        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+        if (scoreData != null) {
+            int yPos = 120;
+            for (Object[] row : scoreData) {
+                String scoreLine = String.format("%-15s %-6d %tF",
+                        row[0], row[1], row[2]);
+                g2.drawString(scoreLine, width / 2 - 180, yPos);
+                yPos += 30;
+            }
+        }
+    }
+
+    private void fetchScores() {
+        new SwingWorker<List<Object[]>, Void>() {
+            @Override
+            protected List<Object[]> doInBackground() throws Exception {
+                String query = "SELECT u.username, s.score, s.played_at "
+                        + "FROM scores s "
+                        + "JOIN users u ON s.user_id = u.id "
+                        + "ORDER BY s.score DESC LIMIT 6";
+
+                List<Object[]> results = new ArrayList<>();
+                try (Connection conn = DBConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+
+                    while (rs.next()) {
+                        results.add(new Object[]{
+                            rs.getString("username"),
+                            rs.getInt("score"),
+                            rs.getTimestamp("played_at")
+                        });
+                    }
+                }
+                return results;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    scoreData = get();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }.execute();
+    }
+
+    public void togglePause() {
+        paused = !paused;
+        if (paused) {
+            SoundManager.pauseAll();
+        } else {
+            SoundManager.resumeAll();
+        }
+
     }
 
     private void addRocket() {
@@ -118,13 +325,16 @@ public class PanelGame extends JComponent {
 
     private void initObjectGame() {
         player1 = new player();
-        player1.changeLocation(150, 150);
+        player1.changeLocation(1366/2, 769/2);
         rockets = new ArrayList<>();
+        boomEffects = new ArrayList<>();
         lost = 0; // Initialize lost counter
 
         new Thread(() -> {
             while (start && !gameOver) { // Add gameOver check
-                addRocket();
+                if (!paused) {
+                    addRocket();
+                }
                 sleep(3000);
             }
         }).start();
@@ -170,46 +380,48 @@ public class PanelGame extends JComponent {
             public void run() {
                 float s = 0.5f;
                 while (start) {
-                    float angle = player1.getAngle();
-                    if (k1.isKey_left()) {
-                        angle -= s;
-                    }
-                    if (k1.isKey_right()) {
-                        angle += s;
-                    }
-                    if (k1.isKey_w() || k1.isKey_e()) {
-                        if (shotTime == 0) {
-                            if (k1.isKey_w()) {
-                                bullets.add(0, new Bullet(player1.getX(), player1.getY(), player1.getAngle(), 5, 3f));
-                                SoundManager.playSound("/game/sound/shoot.wav");
-                            } else {
-                                bullets.add(0, new Bullet(player1.getX(), player1.getY(), player1.getAngle(), 15, 3f));
-                                SoundManager.playSound("/game/sound/shoot.wav");
-                            }
+                    if (!paused) { // Add this check
+                        float angle = player1.getAngle();
+                        if (k1.isKey_left()) {
+                            angle -= s;
                         }
-                        shotTime++;
-                        if (shotTime == 15) {
+                        if (k1.isKey_right()) {
+                            angle += s;
+                        }
+                        if (k1.isKey_w() || k1.isKey_e()) {
+                            if (shotTime == 0) {
+                                if (k1.isKey_w()) {
+                                    bullets.add(0, new Bullet(player1.getX(), player1.getY(), player1.getAngle(), 5, 3f));
+                                    SoundManager.playSound("/game/sound/shoot.wav");
+                                } else {
+                                    bullets.add(0, new Bullet(player1.getX(), player1.getY(), player1.getAngle(), 15, 3f));
+                                    SoundManager.playSound("/game/sound/shoot.wav");
+                                }
+                            }
+                            shotTime++;
+                            if (shotTime == 15) {
+                                shotTime = 0;
+                            }
+                        } else {
                             shotTime = 0;
                         }
-                    } else {
-                        shotTime = 0;
-                    }
-                    if (k1.isKey_space()) {
-                        player1.speedUp();
-                    } else {
-                        player1.speedDown();
-                    }
-                    player1.update();
-                    player1.changeAngle(angle);
-                    for (int i = 0; i < rockets.size(); i++) {
-                        Rocket rocket = rockets.get(i);
-                        if (rocket != null) {
-                            rocket.update();
-                            if (!rocket.check(width, height)) {
-                                rockets.remove(rocket);
-                            } else {
-                                if (player1.isAlive()) {
-                                    checkPlayer(rocket);
+                        if (k1.isKey_space() && !paused) {
+                            player1.speedUp();
+                        } else {
+                            player1.speedDown();
+                        }
+                        player1.update();
+                        player1.changeAngle(angle);
+                        for (int i = 0; i < rockets.size(); i++) {
+                            Rocket rocket = rockets.get(i);
+                            if (rocket != null) {
+                                rocket.update();
+                                if (!rocket.check(width, height)) {
+                                    rockets.remove(rocket);
+                                } else {
+                                    if (player1.isAlive()) {
+                                        checkPlayer(rocket);
+                                    }
                                 }
                             }
                         }
@@ -217,7 +429,8 @@ public class PanelGame extends JComponent {
                     sleep(5);
                 }
             }
-        }).start();
+        }
+        ).start();
     }
 
     private void checkPlayer(Rocket rocket) {
@@ -255,44 +468,16 @@ public class PanelGame extends JComponent {
     }
 
     private void initBullet() {
-        bullets = new ArrayList<>();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (start) {
-                    for (int i = 0; i < bullets.size(); i++) {
-                        Bullet bullet = bullets.get(i);
-                        if (bullet != null) {
-                            bullet.update();
-                            checkBullets(bullet);
-                            if (!bullet.check(width, height)) {
-                                bullets.remove(bullet);
-                            }
-                        } else {
-                            bullets.remove(bullet);
-
-                        }
-                    }
-                    sleep(1);
-                }
+        bullets = new java.util.concurrent.CopyOnWriteArrayList<>();
+        new Thread(() -> {
+            while (start) {
+                bullets.removeIf(bullet -> {
+                    bullet.update();
+                    return !bullet.check(width, height);
+                });
+                sleep(1);
             }
         }).start();
-    }
-
-    private void checkBullets(Bullet bullet) {
-        for (int i = 0; i < rockets.size(); i++) {
-            Rocket rocket = rockets.get(i);
-            if (rocket != null) {
-                Area area = new Area(bullet.getShape());
-                area.intersect(rocket.getShape());
-                if (!area.isEmpty()) {
-                    rockets.remove(rocket);
-                    bullets.remove(bullet);
-                    marks++;
-                    SoundManager.playSound("/game/sound/enemyHit.wav");
-                }
-            }
-        }
     }
 
 // Add this initialization method
@@ -351,6 +536,7 @@ public class PanelGame extends JComponent {
 
     private void drawGame() {
         player1.draw(g2);
+        drawUI(g2);
         for (int i = 0; i < bullets.size(); i++) {
             Bullet bullet = bullets.get(i);
             if (bullet != null) {
@@ -383,6 +569,14 @@ public class PanelGame extends JComponent {
             int textWidth = g2.getFontMetrics().stringWidth(text);
             g2.drawString(text, width / 2 - textWidth / 2, height / 2);
         }
+        if (paused) {
+            g2.setColor(Color.YELLOW);
+            g2.setFont(new Font("Arial", Font.BOLD, 60));
+            String text = "PAUSED";
+            int textWidth = g2.getFontMetrics().stringWidth(text);
+            g2.drawString(text, width / 2 - textWidth / 2, height / 2);
+        }
+
     }
 
     private void render() {
@@ -402,8 +596,9 @@ public class PanelGame extends JComponent {
     }
 // Modify constructor to accept user ID
 
-    public PanelGame(int userId) {
+    public PanelGame(int userId, String uname) {
         this.userId = userId;
+        this.username = uname;
     }
 // Add this method to check player collision
 
@@ -413,16 +608,15 @@ public class PanelGame extends JComponent {
                 player.PLAYER_SIZE, player.PLAYER_SIZE
         ));
 
-        for (Rocket rocket : rockets) {
+        // Use thread-safe iteration
+        rockets.forEach(rocket -> {
             if (rocket != null && playerArea.intersects(rocket.getShape().getBounds2D())) {
                 gameOver = true;
                 saveScore();
                 showGameOver();
-                break;
             }
-        }
+        });
     }
-// Add this method to save score
 
     private void saveScore() {
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(
@@ -439,6 +633,7 @@ public class PanelGame extends JComponent {
     private void checkGameOver() {
         if (lost >= MAX_LOST) {
             gameOver = true;
+            SoundManager.pauseAll();
             saveScore();
             showGameOver();
         }

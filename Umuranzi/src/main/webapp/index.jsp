@@ -1,5 +1,5 @@
-<%@include file="header.jsp" %>
-<%@include file="navbar.jsp" %>
+<%@include file="Sections/header.jsp" %>
+<%@include file="Sections/navbar.jsp" %>
 
 <!-- Hero Section -->
 <div class="hero-section d-flex align-items-center">
@@ -28,4 +28,4 @@
     </div>
 </section>
 
-<%@include file="footer.jsp" %>
+<%@include file="Sections/footer.jsp" %>

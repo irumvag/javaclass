@@ -10,6 +10,34 @@
         <servlet-name>Register</servlet-name>
         <servlet-class>com.mycompany.umuranzi.UserServlet.RegisterServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>RoleRequestServlet</servlet-name>
+        <servlet-class>com.mycompany.umuranzi.UserServlet.RoleRequestServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserServlet</servlet-name>
+        <servlet-class>com.mycompany.umuranzi.UserServlet.UserServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FollowServlet</servlet-name>
+        <servlet-class>com.mycompany.umuranzi.UserServlet.FollowServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ThemeServlet</servlet-name>
+        <servlet-class>com.mycompany.umuranzi.UserServlet.ThemeServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>VerificationServlet</servlet-name>
+        <servlet-class>com.mycompany.umuranzi.Utils.VerificationServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>com.mycompany.umuranzi.UserServlet.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>restaurants</servlet-name>
+        <servlet-class>com.mycompany.umuranzi.UserServlet.restaurants</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Login</servlet-name>
         <url-pattern>/LoginServlet</url-pattern>
@@ -17,6 +45,34 @@
     <servlet-mapping>
         <servlet-name>Register</servlet-name>
         <url-pattern>/RegisterServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RoleRequestServlet</servlet-name>
+        <url-pattern>/RoleRequestServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FollowServlet</servlet-name>
+        <url-pattern>/FollowServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ThemeServlet</servlet-name>
+        <url-pattern>/ThemeServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>VerificationServlet</servlet-name>
+        <url-pattern>/VerificationServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>restaurants</servlet-name>
+        <url-pattern>/restaurants</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserServlet</servlet-name>
+        <url-pattern>/account-settings</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
@@ -26,4 +82,8 @@
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
+    <error-page>
+        <exception-type>Exception</exception-type>
+        <location>/error.jsp</location>
+    </error-page>
 </web-app>

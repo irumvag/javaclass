@@ -1,5 +1,5 @@
-<%@include file="header.jsp" %>
-<%@include file="navbar.jsp" %>
+<%@include file="Sections/header.jsp" %>
+<%@include file="Sections/navbar.jsp" %>
 
 <div class="container mt-5">
     <%-- Error Message --%>
@@ -9,7 +9,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <% }%>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center vh-100">
         <div class="col-md-8">
             <div class="card shadow-lg">
                 <div class="card-header bg-yellow text-black">
@@ -17,6 +17,7 @@
                 </div>
                 <div class="card-body">
                     <form action="RegisterServlet" method="POST">
+                         <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -44,8 +45,42 @@
                                     <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
                                 </div>
                             </div>
+                            <%-- Add after password input --%>
+                            <div class="password-strength mt-2 mb-4">
+                                <div class="progress mb-3" style="height: 3px; width:50%">
+                                    <div class="progress-bar" role="progressbar"></div>
+                                </div>
+                                <small class="text-muted">Password must contain at least 8 characters, 1 number and 1 special character</small>
+                            </div>
+
+                            <script>
+                                document.getElementById('password').addEventListener('input', function (e) {
+                                    const strength = {
+                                        0: {color: '#dc3545', width: '25%'},
+                                        1: {color: '#ffc107', width: '50%'},
+                                        2: {color: '#28a745', width: '100%'}
+                                    };
+
+                                    const progress = document.querySelector('.progress-bar');
+                                    const value = e.target.value;
+
+                                    let score = 0;
+                                    if (value.length >= 8)
+                                        score++;
+                                    if (/\d/.test(value))
+                                        score++;
+                                    if (/[!@#$%^&*]/.test(value))
+                                        score++;
+
+                                    progress.style.width = strength[score].width;
+                                    progress.style.backgroundColor = strength[score].color;
+                                });
+                            </script>
                         </div>
                         <button type="submit" class="btn btn-warning w-100">Register</button>
+                        <p class="text-center mt-3">
+                            Already have an account? <a href="login.jsp" style="text-decoration: none; color: green;">Login here</a>
+                        </p>
                     </form>
                 </div>
             </div>
@@ -53,4 +88,4 @@
     </div>
 </div>
 
-<%@include file="footer.jsp" %>
+<%@include file="Sections/footer.jsp" %>

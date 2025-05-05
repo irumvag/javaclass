@@ -209,7 +209,7 @@ public class loginFrame extends javax.swing.JFrame {
                 if (BCrypt.checkpw(password, storedHash)) {
                     // Correct password
                     JOptionPane.showMessageDialog(this, "Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    new play(rs.getInt("id")).setVisible(true);
+                    new Instruction(rs.getInt("id"),username).setVisible(true);
                     rs.close();
                     dispose();
                     return;
@@ -228,7 +228,7 @@ public class loginFrame extends javax.swing.JFrame {
     }
 
     private void guestLogin() {
-        new play(5).setVisible(true);
+        new Instruction(5,"Guests").setVisible(true);
         dispose();
     }
 
