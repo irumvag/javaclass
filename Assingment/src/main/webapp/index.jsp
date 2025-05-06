@@ -37,7 +37,7 @@
                         </div>
                         <p class="text-center mb-3"><a href="#">Forgot password?</a></p>
                         <button type="submit" class="btn btn-warning p-2 w-100">Login</button>
-                        <p class="text-center mt-3">No Account <a href="register.jsp" style="text-decoration: none;color: greenyellow">Sign up</a>,    By clicking login, you accept user terms and policies.</p>
+                        <p class="text-center mt-3">No Account <a href="signup.jsp" style="text-decoration: none;color: greenyellow">Sign up</a>,    By clicking login, you accept user terms and policies.</p>
                     </form>
                 </div>
             </div>

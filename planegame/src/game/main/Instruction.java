@@ -4,7 +4,9 @@
  */
 package game.main;
 
+import java.awt.BorderLayout;
 import javax.swing.SwingUtilities;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 /**
  *
@@ -18,6 +20,10 @@ public class Instruction extends javax.swing.JFrame {
         this.useris=id;
         this.uname=un;
         initComponents();
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
     }
 
     /**
