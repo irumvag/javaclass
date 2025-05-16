@@ -3,11 +3,35 @@ package com.mycompany.umuranzi.Utils;
 import com.mycompany.umuranzi.Utils.DBConnection;
 import com.mycompany.umuranzi.models.User;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.naming.*;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class UserDAO {
+
     // In UserDAO.java
+    public User getUserById(int userId) throws SQLException, NamingException {
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setUserId(rs.getInt("user_id"));
+                    user.setFullName(rs.getString("full_name"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(User.UserRole.valueOf(rs.getString("role")));
+                    user.setRegistrationDate(rs.getTimestamp("registration_date").toLocalDateTime());
+                    return user;
+                }
+            }
+        }
+        throw new SQLException("User not found with ID: " + userId);
+    }
 
     public boolean verifyToken(String token) throws SQLException, NamingException {
         String sql = "SELECT u.user_id, expiry_date FROM verification_tokens vt "
@@ -161,6 +185,45 @@ public class UserDAO {
             stmt.setString(1, theme);
             stmt.setInt(2, userId);
             stmt.executeUpdate();
+        }
+    }
+
+    public List<User> getAllUsers() throws SQLException, NamingException {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT user_id, full_name, email, role, registration_date FROM users ORDER BY registration_date DESC";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getInt("user_id"));
+                user.setFullName(rs.getString("full_name"));
+                user.setEmail(rs.getString("email"));
+                user.setRole(User.UserRole.valueOf(rs.getString("role")));
+                user.setRegistrationDate(rs.getTimestamp("registration_date").toLocalDateTime());
+                users.add(user);
+            }
+        }
+        return users;
+    }
+
+    public void updateUserRole(int userId, String role) throws SQLException, NamingException {
+        // Validate role
+        if (!Arrays.asList("USER", "RESTAURANT_OWNER", "ADMIN").contains(role)) {
+            throw new IllegalArgumentException("Invalid role specified: " + role);
+        }
+
+        String sql = "UPDATE users SET role = ? WHERE user_id = ?";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, role);
+            stmt.setInt(2, userId);
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("No user found with ID: " + userId);
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ import javax.naming.NamingException;
 public class DBConnection {
     public static Connection getConnection() throws SQLException, NamingException {
         Context initContext = new InitialContext();
-        DataSource ds = (DataSource) initContext.lookup("java:/comp/env/jdbc/umuranzi_db");
+        DataSource ds = (DataSource) initContext.lookup("java:/comp/env/jdbc/dineix");
         return ds.getConnection();
     }
 }

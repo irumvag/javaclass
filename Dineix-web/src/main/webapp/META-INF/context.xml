@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/Dineix-web">
+<Resource name="jdbc/dineix" 
+          auth="Container"
+          type="javax.sql.DataSource"
+          maxTotal="100"
+          maxIdle="30"
+          maxWaitMillis="10000"
+          username="root"
+          password=""
+          driverClassName="com.mysql.cj.jdbc.Driver"
+          url="jdbc:mysql://localhost:3306/dineix?useSSL=false&amp;serverTimezone=UTC"
+/>
+</Context>
