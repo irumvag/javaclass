@@ -12,7 +12,31 @@ public class RoleRequest {
     private String restaurantName;
     private String restaurantAddress;
     private String restaurantContact;
+    private String ReasonforRequest;
 
+    public RoleRequest(int requestId, User user, String requestedRole, String status, String requestDate, String restaurantName, String restaurantAddress, String restaurantContact) {
+        this.requestId = requestId;
+        this.user = user;
+        this.requestedRole = requestedRole;
+        this.status = status;
+        this.requestDate = Timestamp.valueOf(requestDate);
+        this.restaurantName = restaurantName;
+        this.restaurantAddress = restaurantAddress;
+        this.restaurantContact = restaurantContact;
+    }
+
+    public RoleRequest(int requestId, User user, String requestedRole, String status, Timestamp requestDate, String restaurantName, String restaurantAddress, String restaurantContact, String ReasonforRequest) {
+        this.requestId = requestId;
+        this.user = user;
+        this.requestedRole = requestedRole;
+        this.status = status;
+        this.requestDate = requestDate;
+        this.restaurantName = restaurantName;
+        this.restaurantAddress = restaurantAddress;
+        this.restaurantContact = restaurantContact;
+        this.ReasonforRequest = ReasonforRequest;
+    }
+    
     // Constructor
     public RoleRequest() {
     }
@@ -20,7 +44,14 @@ public class RoleRequest {
          this.status=status;
          this.requestDate=Timestamp.valueOf(requestDate);
     }
-
+    public String getReasonforRequest()
+    {
+        return ReasonforRequest;
+    }
+    public void setReasonforRequest(String Reason)
+    {
+        this.ReasonforRequest=Reason;
+    }
     // Getters
     public int getRequestId() {
         return requestId;

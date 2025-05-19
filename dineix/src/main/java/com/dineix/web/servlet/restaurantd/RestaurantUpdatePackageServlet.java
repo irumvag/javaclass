@@ -23,7 +23,7 @@ public class RestaurantUpdatePackageServlet extends HttpServlet {
         String sessionCsrfToken = (String) request.getSession().getAttribute("csrfToken");
         if (csrfToken == null || !csrfToken.equals(sessionCsrfToken)) {
             request.setAttribute("errorMessage", "Invalid CSRF token.");
-            request.getRequestDispatcher("/restaurant/dashboard").forward(request, response);
+            response.sendRedirect("dashboard#packages");
             return;
         }
 
@@ -54,7 +54,7 @@ public class RestaurantUpdatePackageServlet extends HttpServlet {
             }
         } catch (Exception e) {
             request.setAttribute("errorMessage", "Invalid package details.");
-            request.getRequestDispatcher("dashboard").forward(request, response);
+            response.sendRedirect("dashboard#packages");
             return;
         }
 
@@ -74,12 +74,12 @@ public class RestaurantUpdatePackageServlet extends HttpServlet {
                 } else {
                     request.setAttribute("errorMessage", "Package not found or you don't have permission to edit it.");
                 }
-                request.getRequestDispatcher("dashboard").forward(request, response);
+                response.sendRedirect("dashboard#packages");
             }
         } catch (SQLException e) {
             request.setAttribute("errorMessage", "An error occurred while updating the package.");
             e.printStackTrace();
-            request.getRequestDispatcher("dashboard").forward(request, response);
+            response.sendRedirect("dashboard#packages");
         }
     }
 }

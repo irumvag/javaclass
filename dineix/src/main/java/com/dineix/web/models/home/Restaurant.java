@@ -61,29 +61,5 @@ public class Restaurant {
     public String getDescription() { return description; }
 }
 
-//public class Restaurant {
-//    private int restaurantId;
-//    private int ownerId;
-//    private String name;
-//    private String address;
-//    private String contactNumber;
-//    private String logoUrl;
-//    private String description;
-//
-//    // Constructor and getters/setters
-//    public int getRestaurantId() { return restaurantId; }
-//    public void setRestaurantId(int restaurantId) { this.restaurantId = restaurantId; }
-//    public int getOwnerId() { return ownerId; }
-//    public void setOwnerId(int ownerId) { this.ownerId = ownerId; }
-//    public String getName() { return name; }
-//    public void setName(String name) { this.name = name; }
-//    public String getAddress() { return address; }
-//    public void setAddress(String address) { this.address = address; }
-//    public String getContactNumber() { return contactNumber; }
-//    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
-//    public String getLogoUrl() { return logoUrl; }
-//    public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
-//    public String getDescription() { return description; }
-//    public void setDescription(String description) { this.description = description; }
-//}
+
 

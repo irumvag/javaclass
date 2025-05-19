@@ -47,7 +47,7 @@ public class PurchasePackageServlet extends HttpServlet {
 
         if (packageIdStr == null) {
             request.setAttribute("errorMessage", "Package ID is required.");
-            request.getRequestDispatcher("dashboard").forward(request, response);
+            response.sendRedirect("dashboard");
             return;
         }
 
@@ -56,7 +56,7 @@ public class PurchasePackageServlet extends HttpServlet {
             packageId = Integer.parseInt(packageIdStr);
         } catch (NumberFormatException e) {
             request.setAttribute("errorMessage", "Invalid package ID.");
-            request.getRequestDispatcher("dashboard").forward(request, response);
+            response.sendRedirect("dashboard");
             return;
         }
 
@@ -71,7 +71,7 @@ public class PurchasePackageServlet extends HttpServlet {
                     numberOfMeals = rs.getInt("number_of_meals");
                 } else {
                     request.setAttribute("errorMessage", "Package not found.");
-                    request.getRequestDispatcher("dashboard").forward(request, response);
+                    response.sendRedirect("dashboard");
                     return;
                 }
             }
@@ -107,6 +107,6 @@ public class PurchasePackageServlet extends HttpServlet {
             request.setAttribute("errorMessage", "Error purchasing package: " + e.getMessage());
         }
 
-        request.getRequestDispatcher("dashboard").forward(request, response);
+        response.sendRedirect("dashboard");
     }
 }

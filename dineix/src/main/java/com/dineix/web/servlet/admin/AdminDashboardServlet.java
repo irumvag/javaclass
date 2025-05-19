@@ -157,7 +157,7 @@ public class AdminDashboardServlet extends HttpServlet {
 
         // Total Revenue
         try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT COALESCE(SUM(mp.price), 0) FROM purchased_meal_packages pmp " +
+                "SELECT COALESCE(SUM(mp.price), 0) FROM user_meal_purchases pmp " +
                 "JOIN meal_packages mp ON pmp.package_id = mp.package_id");
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
@@ -183,7 +183,7 @@ public class AdminDashboardServlet extends HttpServlet {
                 "SELECT r.name, COALESCE(SUM(mp.price), 0) AS revenue " +
                 "FROM restaurants r " +
                 "LEFT JOIN meal_packages mp ON r.restaurant_id = mp.restaurant_id " +
-                "LEFT JOIN purchased_meal_packages pmp ON mp.package_id = pmp.package_id " +
+                "LEFT JOIN user_meal_purchases pmp ON mp.package_id = pmp.package_id " +
                 "GROUP BY r.restaurant_id, r.name");
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -212,7 +212,7 @@ public class AdminDashboardServlet extends HttpServlet {
                 "SELECT r.name, DATE_FORMAT(pmp.purchase_date, '%Y-%m') AS month, COUNT(pmp.purchase_id) AS purchase_count " +
                 "FROM restaurants r " +
                 "LEFT JOIN meal_packages mp ON r.restaurant_id = mp.restaurant_id " +
-                "LEFT JOIN purchased_meal_packages pmp ON mp.package_id = pmp.package_id " +
+                "LEFT JOIN user_meal_purchases pmp ON mp.package_id = pmp.package_id " +
                 "WHERE pmp.purchase_id IS NOT NULL " +
                 "GROUP BY r.restaurant_id, r.name, DATE_FORMAT(pmp.purchase_date, '%Y-%m') " +
                 "ORDER BY r.name, month");

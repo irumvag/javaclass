@@ -159,6 +159,19 @@
             max-height: 500px;
             overflow-y: auto;
         }
+/*        .chart-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-title {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--secondary-black);
+        }*/
     </style>
 </head>
 <body>
@@ -567,7 +580,7 @@
                     fill: true,
                     tension: 0.4
                 }]
-            },
+               },
             options: {
                 responsive: true,
                 scales: {

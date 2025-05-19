@@ -7,7 +7,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.json.JSONObject;
+
 import javax.sql.DataSource;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,40 +24,56 @@ public class RequestRoleServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Integer userId = (Integer) request.getSession().getAttribute("userId");
-        String csrfToken = request.getParameter("csrfToken");
+        response.setContentType("text/plain;charset=UTF-8");
+
+        // Read JSON body
+        StringBuilder sb = new StringBuilder();
+        String line;
+        try (BufferedReader reader = request.getReader()) {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        JSONObject jsonBody = new JSONObject(sb.toString());
+
+        // Validate CSRF token
+        String csrfToken = request.getHeader("X-CSRF-Token");
         String sessionCsrfToken = (String) request.getSession().getAttribute("csrfToken");
-        String requestedRole = request.getParameter("requestedRole");
-        String restaurantName = request.getParameter("restaurantName");
-        String restaurantAddress = request.getParameter("restaurantAddress");
-        String restaurantContact = request.getParameter("restaurantContact");
-        String reason = request.getParameter("reason");
-
-        // Validate inputs
-        if (userId == null) {
-            request.setAttribute("errorMessage", "Please log in to request a role.");
-            request.getRequestDispatcher("/login").forward(request, response);
-            return;
-        }
-
         if (csrfToken == null || !csrfToken.equals(sessionCsrfToken)) {
-            request.setAttribute("errorMessage", "Invalid CSRF token.");
-            request.getRequestDispatcher("dashboard").forward(request, response);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Invalid CSRF token");
             return;
         }
 
-        if (requestedRole == null || !requestedRole.equals("RESTAURANT_OWNER") ||
+        // Validate user session
+        Integer userId = (Integer) request.getSession().getAttribute("userId");
+        if (userId == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("User not logged in");
+            return;
+        }
+
+        // Get and validate parameters
+        String requestedRole = jsonBody.optString("requestedRole");
+        String restaurantName = jsonBody.optString("restaurantName");
+        String restaurantAddress = jsonBody.optString("restaurantAddress");
+        String restaurantContact = jsonBody.optString("restaurantContact");
+        String reason = jsonBody.optString("reason");
+
+        if (!requestedRole.equals("RESTAURANT_OWNER") ||
             restaurantName == null || restaurantName.trim().isEmpty() ||
             restaurantAddress == null || restaurantAddress.trim().isEmpty() ||
             restaurantContact == null || restaurantContact.trim().isEmpty() ||
             reason == null || reason.trim().isEmpty()) {
-            request.setAttribute("errorMessage", "All fields are required and role must be RESTAURANT_OWNER.");
-            request.getRequestDispatcher("dashboard").forward(request, response);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("All fields are required and role must be RESTAURANT_OWNER");
             return;
         }
 
+        // Process request
         try (Connection conn = dataSource.getConnection()) {
-            String sql = "INSERT INTO role_requests (user_id, requested_role, restaurant_name, restaurant_address, restaurant_contact, reason, status, request_date) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?)";
+            String sql = "INSERT INTO role_requests (user_id, requested_role, restaurant_name, restaurant_address, restaurant_contact, ReasonforRequest, status, request_date) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?)";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, userId);
                 stmt.setString(2, requestedRole);
@@ -67,14 +86,14 @@ public class RequestRoleServlet extends HttpServlet {
             }
 
             // Create notification
-            NotificationUtil.createNotification(dataSource, userId, "Your restaurant owner role request for " + restaurantName + " has been submitted.");
+            NotificationUtil.createNotification(dataSource, userId, 
+                "Your restaurant owner role request for " + restaurantName + " has been submitted.");
 
-            request.setAttribute("successMessage", "Role request submitted successfully.");
+            response.getWriter().write("Role request submitted successfully");
         } catch (SQLException e) {
-            request.setAttribute("errorMessage", "Error submitting role request: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("Error submitting role request: " + e.getMessage());
             e.printStackTrace();
         }
-
-        request.getRequestDispatcher("dashboard").forward(request, response);
     }
 }

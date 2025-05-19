@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,47 +19,52 @@ public class FollowRestaurantServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json");
-        JSONObject jsonResponse = new JSONObject();
+        response.setContentType("text/plain;charset=UTF-8");
 
-        // CSRF token validation
-        String csrfToken = request.getParameter("csrfToken");
+        // Read JSON body
+        StringBuilder sb = new StringBuilder();
+        String line;
+        try (BufferedReader reader = request.getReader()) {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        JSONObject jsonBody = new JSONObject(sb.toString());
+
+        // Get data from JSON
+        String csrfToken = request.getHeader("X-CSRF-Token");
         String sessionCsrfToken = (String) request.getSession().getAttribute("csrfToken");
         if (csrfToken == null || !csrfToken.equals(sessionCsrfToken)) {
-            jsonResponse.put("success", false).put("message", "Invalid CSRF token.");
-            response.getWriter().write(jsonResponse.toString());
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Invalid CSRF token.");
             return;
         }
 
-        // Check if user is logged in
         Integer userId = (Integer) request.getSession().getAttribute("userId");
         if (userId == null) {
-            jsonResponse.put("success", false).put("message", "User not logged in.");
-            response.getWriter().write(jsonResponse.toString());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("User not logged in.");
             return;
         }
 
-        // Get parameters
-        String restaurantIdStr = request.getParameter("restaurantId");
-        String action = request.getParameter("action");
-        int restaurantId;
-        try {
-            restaurantId = Integer.parseInt(restaurantIdStr);
-        } catch (NumberFormatException e) {
-            jsonResponse.put("success", false).put("message", "Invalid restaurant ID.");
-            response.getWriter().write(jsonResponse.toString());
+        int restaurantId = jsonBody.optInt("restaurantId", -1);
+        String action = jsonBody.optString("action");
+
+        if (restaurantId <= 0 || action == null || action.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("Invalid parameters.");
             return;
         }
 
         try (Connection conn = dataSource.getConnection()) {
             String sql;
             if ("follow".equals(action)) {
-                sql = "INSERT INTO user_restaurant_follows (user_id, restaurant_id) VALUES (?, ?)";
+                sql = "INSERT IGNORE INTO user_restaurant_follows (user_id, restaurant_id) VALUES (?, ?)";
             } else if ("unfollow".equals(action)) {
                 sql = "DELETE FROM user_restaurant_follows WHERE user_id = ? AND restaurant_id = ?";
             } else {
-                jsonResponse.put("success", false).put("message", "Invalid action.");
-                response.getWriter().write(jsonResponse.toString());
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Invalid action.");
                 return;
             }
 
@@ -66,16 +72,16 @@ public class FollowRestaurantServlet extends HttpServlet {
                 stmt.setInt(1, userId);
                 stmt.setInt(2, restaurantId);
                 int rowsAffected = stmt.executeUpdate();
-                if (rowsAffected > 0) {
-                    jsonResponse.put("success", true);
+                if (rowsAffected > 0 || "follow".equals(action)) {
+                    response.getWriter().write("Success");
                 } else {
-                    jsonResponse.put("success", false).put("message", "Action failed.");
+                    response.getWriter().write("No change.");
                 }
             }
         } catch (SQLException e) {
-            jsonResponse.put("success", false).put("message", "Database error.");
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("Database error.");
         }
-
-        response.getWriter().write(jsonResponse.toString());
     }
 }

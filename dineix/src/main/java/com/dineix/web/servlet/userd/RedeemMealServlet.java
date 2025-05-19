@@ -45,9 +45,14 @@ public class RedeemMealServlet extends HttpServlet {
         }
 
         try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false); // Start transaction
+            
             String checkSql;
             PreparedStatement stmt;
             int purchaseId = 0;
+            int mealsRemaining = 0;
+            String packageName = "";
+            String restaurantName = "";
 
             // Try redemption code first
             if (redemptionCode != null && !redemptionCode.trim().isEmpty()) {
@@ -56,11 +61,13 @@ public class RedeemMealServlet extends HttpServlet {
                     out.print("{\"success\": false, \"message\": \"Valid 6-digit redemption code is required.\"}");
                     return;
                 }
-                checkSql = "SELECT ump.purchase_id, ump.meals_remaining, ump.redemption_code, mp.package_name, mp.description, r.name AS restaurant_name " +
-                           "FROM user_meal_purchases ump " +
-                           "JOIN meal_packages mp ON ump.package_id = mp.package_id " +
-                           "JOIN restaurants r ON mp.restaurant_id = r.restaurant_id " +
-                           "WHERE ump.redemption_code = ? AND ump.user_id = ?";
+                
+                checkSql = "SELECT ump.purchase_id, ump.meals_remaining, ump.redemption_code, mp.package_name, r.name AS restaurant_name " +
+                         "FROM user_meal_purchases ump " +
+                         "JOIN meal_packages mp ON ump.package_id = mp.package_id " +
+                         "JOIN restaurants r ON mp.restaurant_id = r.restaurant_id " +
+                         "WHERE ump.redemption_code = ? AND ump.user_id = ? FOR UPDATE";
+                
                 stmt = conn.prepareStatement(checkSql);
                 stmt.setString(1, redemptionCode);
                 stmt.setInt(2, userId);
@@ -72,11 +79,13 @@ public class RedeemMealServlet extends HttpServlet {
                     out.print("{\"success\": false, \"message\": \"Invalid purchase ID.\"}");
                     return;
                 }
-                checkSql = "SELECT ump.purchase_id, ump.meals_remaining, ump.redemption_code, mp.package_name, mp.description, r.name AS restaurant_name " +
-                           "FROM user_meal_purchases ump " +
-                           "JOIN meal_packages mp ON ump.package_id = mp.package_id " +
-                           "JOIN restaurants r ON mp.restaurant_id = r.restaurant_id " +
-                           "WHERE ump.purchase_id = ? AND ump.user_id = ?";
+                
+                checkSql = "SELECT ump.purchase_id, ump.meals_remaining, ump.redemption_code, mp.package_name, r.name AS restaurant_name " +
+                         "FROM user_meal_purchases ump " +
+                         "JOIN meal_packages mp ON ump.package_id = mp.package_id " +
+                         "JOIN restaurants r ON mp.restaurant_id = r.restaurant_id " +
+                         "WHERE ump.purchase_id = ? AND ump.user_id = ? FOR UPDATE";
+                
                 stmt = conn.prepareStatement(checkSql);
                 stmt.setInt(1, purchaseId);
                 stmt.setInt(2, userId);
@@ -86,46 +95,87 @@ public class RedeemMealServlet extends HttpServlet {
                 return;
             }
 
-            // Execute query
+            // Execute query to check purchase
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int mealsRemaining = rs.getInt("meals_remaining");
+                    purchaseId = rs.getInt("purchase_id");
+                    mealsRemaining = rs.getInt("meals_remaining");
+                    packageName = rs.getString("package_name");
+                    restaurantName = rs.getString("restaurant_name");
+                    
                     if (mealsRemaining <= 0) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         out.print("{\"success\": false, \"message\": \"No meals remaining in this package.\"}");
                         return;
                     }
-
-                    // Prepare response data
-                    purchaseId = rs.getInt("purchase_id");
-                    String packageName = rs.getString("package_name");
-                    String description = rs.getString("description");
-                    String restaurantName = rs.getString("restaurant_name");
-                    String usedRedemptionCode = rs.getString("redemption_code");
-                    String responseJson = String.format(
-                        "{\"success\": true, \"message\": \"Please provide this %s to the restaurant: %s\", " +
-                        "\"details\": {\"redemptionCode\": \"%s\", \"purchaseId\": %d, \"packageName\": \"%s\", \"description\": \"%s\", " +
-                        "\"mealsRemaining\": %d, \"restaurantName\": \"%s\"}}",
-                        usedRedemptionCode != null ? "redemption code" : "purchase ID",
-                        usedRedemptionCode != null ? usedRedemptionCode : purchaseId,
-                        usedRedemptionCode != null ? usedRedemptionCode : "",
-                        purchaseId, packageName, description, mealsRemaining, restaurantName
-                    );
-                    out.print(responseJson);
-
-                    // Notify user
-                    NotificationUtil.createNotification(dataSource, userId, 
-                        "Redemption " + (usedRedemptionCode != null ? "code " + usedRedemptionCode : "for purchase ID " + purchaseId) + 
-                        " requested for " + packageName + " at " + restaurantName);
                 } else {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     out.print("{\"success\": false, \"message\": \"Invalid redemption code or purchase ID.\"}");
+                    return;
                 }
             }
+
+            // Update meals remaining
+            String updateSql = "UPDATE user_meal_purchases SET meals_remaining = meals_remaining - 1 WHERE purchase_id = ?";
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                updateStmt.setInt(1, purchaseId);
+                int rowsUpdated = updateStmt.executeUpdate();
+                
+                if (rowsUpdated == 0) {
+                    conn.rollback();
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    out.print("{\"success\": false, \"message\": \"Failed to update meal count.\"}");
+                    return;
+                }
+            }
+
+            // Record redemption in logs
+            String logSql = "INSERT INTO redemption_logs (purchase_id, restaurant_id, redemption_code, success, message) " +
+                           "VALUES (?, (SELECT restaurant_id FROM meal_packages WHERE package_id = " +
+                           "(SELECT package_id FROM user_meal_purchases WHERE purchase_id = ?)), ?, 1, 'Meal redeemed successfully')";
+            
+            try (PreparedStatement logStmt = conn.prepareStatement(logSql)) {
+                logStmt.setInt(1, purchaseId);
+                logStmt.setInt(2, purchaseId);
+                logStmt.setString(3, redemptionCode);
+                logStmt.executeUpdate();
+            }
+
+            conn.commit(); // Commit transaction
+            
+            // Prepare success response
+            String responseJson = String.format(
+                "{\"success\": true, \"message\": \"Meal redeemed successfully for %s at %s\", " +
+                "\"details\": {\"redemptionCode\": \"%s\", \"purchaseId\": %d, \"packageName\": \"%s\", " +
+                "\"mealsRemaining\": %d, \"restaurantName\": \"%s\"}}",
+                packageName, restaurantName,
+                redemptionCode != null ? redemptionCode : "",
+                purchaseId, packageName, mealsRemaining - 1, restaurantName
+            );
+            
+            out.print(responseJson);
+
+            // Notify user
+            NotificationUtil.createNotification(dataSource, userId, 
+                "Meal redeemed for " + packageName + " at " + restaurantName + 
+                ". Remaining meals: " + (mealsRemaining - 1));
+
         } catch (SQLException e) {
+            try(Connection conn = dataSource.getConnection()) {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"success\": false, \"message\": \"Error processing request: " + e.getMessage() + "\"}");
             e.printStackTrace();
+        } finally {
+            try (Connection conn = dataSource.getConnection()){
+                if (conn != null) conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -86,7 +86,9 @@
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-black sticky-top">
             <div class="container">
-                <a class="navbar-brand" href="#"><img src="img/logo.png" alt="DineIX" height="40"></a>
+                <a class="navbar-brand" href="${pageContext.request.contextPath}/">
+                    <span class="fw-bold">Dine<span class="text-warning">IX</span></span>
+               </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>

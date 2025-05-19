@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    <listener>
+        <listener-class>com.dineix.web.utils.AppContextListener</listener-class>
+    </listener>
     <servlet>
         <description>login logic</description>
         <servlet-name>loginpage</servlet-name>
@@ -33,6 +36,10 @@
         <servlet-name>addpkg</servlet-name>
         <servlet-class>com.dineix.web.servlet.restaurantd.RestaurantAddPackageServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>updateuser</servlet-name>
+        <servlet-class>com.dineix.web.servlet.userd.updateuser</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>loginpage</servlet-name>
         <url-pattern>/login</url-pattern>
@@ -40,6 +47,23 @@
     <servlet-mapping>
         <servlet-name>aboutpage</servlet-name>
         <url-pattern>/about</url-pattern>
+    </servlet-mapping>
+    <!-- Purchase History and Redemption Tracking Servlets -->
+    <servlet>
+        <servlet-name>purchasehistory</servlet-name>
+        <servlet-class>com.dineix.web.servlet.userd.PurchaseHistoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>purchasehistory</servlet-name>
+        <url-pattern>/user/purchase-history</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>redemptionhistory</servlet-name>
+        <servlet-class>com.dineix.web.servlet.restaurantd.RedemptionHistoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>redemptionhistory</servlet-name>
+        <url-pattern>/restaurant/redemption-history</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>registerpage</servlet-name>
@@ -65,14 +89,32 @@
         <servlet-name>addpkg</servlet-name>
         <url-pattern>/restaurant/add-package</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>updateuser</servlet-name>
+        <url-pattern>/user/updateduser</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
     <resource-ref>
-    <res-ref-name>jdbc/dineix</res-ref-name>
-    <res-type>javax.sql.DataSource</res-type>
-    <res-auth>Container</res-auth>
-</resource-ref>
+        <res-ref-name>jdbc/dineix</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error.jsp</location>
+    </error-page>
+    <jsp-config>
+        <taglib>
+            <taglib-uri>/WEB-INF/tags/dineix-tags</taglib-uri>
+            <taglib-location>/WEB-INF/tags/dineix-tags.tld</taglib-location>
+        </taglib>
+    </jsp-config>
 </web-app>
